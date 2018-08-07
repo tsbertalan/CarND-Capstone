@@ -19,7 +19,7 @@ class YawController(object):
         if abs(linear_vel_cmd) > 0.:
             psi_dot_cmd = angular_vel_cmd * (linear_vel_fb/linear_vel_cmd)
         else:
-            psi_dot_cmd - 0.0
+            psi_dot_cmd = 0.0
 
         if abs(linear_vel_fb) > 0.1:
             max_yaw_rate = abs(self.max_lat_accel / linear_vel_fb);
