@@ -5,26 +5,29 @@ import rospy
 from geometry_msgs.msg import PoseStamped
 from styx_msgs.msg import Lane, Waypoint
 from scipy.spatial import KDTree
+from std_msgs.msg import Int32
 
 import math
 
 '''
-This node will publish waypoints from the car's current position to some `x` distance ahead.
+This node will publish waypoints from the car's current position to some `x`
+distance ahead.
 
-As mentioned in the doc, you should ideally first implement a version which does not care
-about traffic lights or obstacles.
+As mentioned in the doc, you should ideally first implement a version which does
+not care about traffic lights or obstacles.
 
-Once you have created dbw_node, you will update this node to use the status of traffic lights too.
+Once you have created dbw_node, you will update this node to use the status of
+traffic lights too.
 
-Please note that our simulator also provides the exact location of traffic lights and their
-current status in `/vehicle/traffic_lights` message. You can use this message to build this node
-as well as to verify your TL classifier.
+Please note that our simulator also provides the exact location of traffic
+lights and their current status in `/vehicle/traffic_lights` message. You can
+use this message to build this node as well as to verify your TL classifier.
 
 TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 '''
 
-LOOKAHEAD_WPS = 30 # Number of waypoints we will publish. You can change this number
-
+LOOKAHEAD_WPS = 30 # Number of wpts we will publish. You can change this number
+MAX_DECEL = 0.5 # [m/s^2]
 
 class WaypointUpdater(object):
     def __init__(self):
@@ -34,27 +37,25 @@ class WaypointUpdater(object):
         rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
 
         # TODO: Add a subscriber for /traffic_waypoint and /obstacle_waypoint below
-        # rospy.Subscriber('/traffic_waypoint', Int32, self.traffic_cb)
+        rospy.Subscriber('/traffic_waypoint', Int32, self.traffic_cb)
         # rospy.Subscriber('/obstacle_waypoint', Lane, self.obstacle_cb)
 
         self.final_waypoints_pub = rospy.Publisher('final_waypoints',
                                                     Lane, queue_size=1)
-
-        # TODO: Add other member variables you need below
         self.pose = None
         self.base_waypoints = None
         self.waypoints_2d = None
         self.waypoint_tree = None
 
-#        rospy.spin()
+        self.stopline_wpt_idx = -1
+
         self.loop()
 
     def loop(self):
-        rate = rospy.Rate(50) # cycle at 50 Hz
+        rate = rospy.Rate(50) # 50 Hz
         while not rospy.is_shutdown():
             if self.pose and self.base_waypoints: # self.waypoint_tree instead?
-                closest_waypoint_idx = self.get_closest_waypoint_idx()
-                self.publish_waypoints(closest_waypoint_idx)
+                self.publish_waypoints()
             rate.sleep()
 
     def pose_cb(self, msg):
@@ -68,8 +69,7 @@ class WaypointUpdater(object):
             self.waypoint_tree = KDTree(self.waypoints_2d)
 
     def traffic_cb(self, msg):
-        # TODO: Callback for /traffic_waypoint message. Implement
-        pass
+        self.stopline_wpt_idx = msg.data
 
     def obstacle_cb(self, msg):
         # TODO: Callback for /obstacle_waypoint message. We will implement it later
@@ -95,15 +95,44 @@ class WaypointUpdater(object):
             closest_idx = (closest_idx + 1) % len(self.waypoints_2d)
         return closest_idx
 
-    def publish_waypoints(self, start_idx):
+    def publish_waypoints(self):
+        final_lane_data = self.generate_lane()
+        self.final_waypoints_pub.publish(final_lane_data)
+
+    def generate_lane(self):
         lane = Lane() # instantiate a new styx_msgs/Lane object
+
         lane.header = self.base_waypoints.header # are headers even being used?
 
-        # do we need to worry about wrap around? Python slice will just grab until end.
-        lane.waypoints = self.base_waypoints.waypoints[start_idx:(start_idx+LOOKAHEAD_WPS)]
+        start_idx = self.get_closest_waypoint_idx()
+        end_idx = start_idx + LOOKAHEAD_WPS
+        # Python slice will just grab to end. Need to worry about start/finish wrap?
+        baselane_wpts = self.base_waypoints.waypoints[start_idx:end_idx]
 
-        self.final_waypoints_pub.publish(lane)
+        if self.stopline_wpt_idx == -1 or (self.stopline_wpt_idx >= end_idx):
+            lane.waypoints = baselane_wpts
+        else:
+            lane.waypoints = self.decelerate_wpts(baselane_wpts, start_idx)
 
+        return lane
+
+    def decelerate_wpts(self, wpts, start_idx):
+        tmp = []
+        for i, wp in enumerate(wpts):
+            p = Waypoint()
+            p.pose = wp.pose
+
+            # stop 2 wpts behind line to prevent nose of car sticking past
+            stop_idx = self.stopline_wpt_idx - start_idx - 2
+            stop_idx = max(stop_idx, 0)
+            dist = self.distance(wpts, i, stop_idx)
+            vel = math.sqrt(2 * MAX_DECEL * dist)
+            if vel < 1.0:
+                vel = 0.
+
+            p.twist.twist.linear.x = min(vel, wp.twist.twist.linear.x)
+            tmp.append(p)
+        return tmp
 
     def get_waypoint_velocity(self, waypoint):
         return waypoint.twist.twist.linear.x
