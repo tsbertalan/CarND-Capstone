@@ -20,6 +20,7 @@ cd models && git checkout f7e99c0
 
 
 # Get protoc compiler 3.3.0
+# TODO: Remove if unnecessary.
 cd
 wget https://github.com/google/protobuf/releases/download/v3.3.0/protoc-3.3.0-linux-x86_64.zip
 unzip protoc-3.3.0-linux-x86_64.zip  -d protoc330
@@ -31,10 +32,12 @@ cd
 cd models/research/
 "$PROTOC" object_detection/protos/*.proto --python_out=.
 export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim
+echo "export PYTHONPATH=\$PYTHONPATH:`pwd`:`pwd`/slim" >> ~/.bashrc
 python object_detection/builders/model_builder_test.py
 
 
 # Install COCO API.
+# TODO: Remove if unnecessary.
 cd
 git clone https://github.com/cocodataset/cocoapi.git
 cd cocoapi/PythonAPI
