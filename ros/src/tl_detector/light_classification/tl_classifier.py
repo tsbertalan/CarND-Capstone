@@ -34,9 +34,7 @@ class TLClassifier(object):
         self.MODEL_FILE    = self.MODEL_NAME + '.tar.gz'
         self.DOWNLOAD_BASE = 'http://download.tensorflow.org/models/object_detection/'
 
-
         # Load the Labels
-
         PATH_TO_LABELS = self.PATH_TO_MODEL+'color_label.pbtx'
         NUM_CLASSES    = 4
 
@@ -57,9 +55,9 @@ class TLClassifier(object):
         self.detection_graph = tf.Graph()
 
         if self.mode == "sim":
-            PATH_TO_CKPT = './light_classification/frozen_inference_graph_sim.pb'
+            PATH_TO_CKPT = self.PATH_TO_MODEL + 'frozen_inference_graph_sim.pb'
         else:
-            PATH_TO_CKPT = './light_classification/frozen_inference_graph_real.pb'
+            PATH_TO_CKPT = self.PATH_TO_MODEL + 'frozen_inference_graph_real.pb'
 
         with self.detection_graph.as_default():
             od_graph_def = tf.GraphDef()
@@ -76,7 +74,6 @@ class TLClassifier(object):
         self.scores         = self.detection_graph.get_tensor_by_name('detection_scores:0')
         self.classes        = self.detection_graph.get_tensor_by_name('detection_classes:0')
         self.num_detections = self.detection_graph.get_tensor_by_name('num_detections:0')
-
 
     def check_condition(self):
 
@@ -118,6 +115,26 @@ class TLClassifier(object):
 
         self.maybe_download_model = True
 
+    def get_boxes(self, image):
+
+
+        # add dimension to feed classifier
+        feeded_image = np.expand_dims(image, axis=0)
+
+        with self.detection_graph.as_default():
+            boxes, scores, classes, num = self.sess.run([self.boxes,
+                                                          self.scores,
+                                                          self.classes,
+                                                          self.num_detections],
+                                                          feed_dict={self.image_tensor: feeded_image})
+
+        # remove unnessary dimension
+        boxes   = np.squeeze(boxes)
+        scores  = np.squeeze(scores)
+        classes = np.squeeze(classes).astype(np.int32)
+
+        return boxes, scores, classes, num
+
     def get_classification(self, image):
         """
         Determines the color of the traffic light in the image
@@ -135,21 +152,7 @@ class TLClassifier(object):
 
         if not self.maybe_download_model: self.maybe_download_pretrained_vgg()
 
-        # add dimension to feed classifier
-        feeded_image = np.expand_dims(image, axis=0)
-
-        with self.detection_graph.as_default():
-            (boxes, scores, classes, num)= self.sess.run([self.boxes,
-                                                          self.scores,
-                                                          self.classes,
-                                                          self.num_detections],
-                                                          feed_dict={self.image_tensor: feeded_image})
-
-
-        # remove unnessary dimension
-        boxes   = np.squeeze(boxes)
-        scores  = np.squeeze(scores)
-        classes = np.squeeze(classes).astype(np.int32)
+        boxes, scores, classes, num = self.get_boxes(image)
 
         predicted_traffic_light = "UNKNOWN"
 
