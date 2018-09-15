@@ -135,7 +135,7 @@ class TLDetector(object):
             int: ID of traffic light color (specified in styx_msgs/TrafficLight)
 
         """
-        testing = True
+        testing = False
 
         if testing:
             return light.state
