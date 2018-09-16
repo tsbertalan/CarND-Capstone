@@ -158,11 +158,9 @@ class TLClassifier(object):
 
         highest_score = 0.0
 
-        for i in range(boxes.shape[0]):
-            # choose result with confidence over 60%
-            if scores[i] > 0.6 and highest_score < scores[i]:
-                # update traffic light
-                predicted_traffic_light = self.category_index[classes[i]]['name']
+        best_index = np.argmax(scores)
+        if scores[best_index] > 0.6:
+            predicted_traffic_light = self.category_index[classes[best_index]]['name']
 
         print predicted_traffic_light
 
