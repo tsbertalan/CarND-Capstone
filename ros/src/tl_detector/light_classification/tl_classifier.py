@@ -55,9 +55,9 @@ class TLClassifier(object):
         self.detection_graph = tf.Graph()
 
         if self.mode == "sim":
-            PATH_TO_CKPT = self.PATH_TO_MODEL + 'frozen_inference_graph_sim.pb'
+            PATH_TO_CKPT = self.PATH_TO_MODEL + 'saved_nets/luu_sim.pb'
         else:
-            PATH_TO_CKPT = self.PATH_TO_MODEL + 'frozen_inference_graph_real.pb'
+            PATH_TO_CKPT = self.PATH_TO_MODEL + 'saved_nets/luu_real.pb'
 
         with self.detection_graph.as_default():
             od_graph_def = tf.GraphDef()
