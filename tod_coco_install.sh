@@ -7,7 +7,7 @@ set -e
 
 # Install dependencies.
 apt-get --yes install protobuf-compiler python-pil python-lxml python-tk wget unzip
-pip install --user Cython contextlib2 jupyter matplotlib
+pip install Cython contextlib2 jupyter matplotlib
 
 
 # Install TOD API.
