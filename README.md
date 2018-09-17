@@ -19,6 +19,29 @@ Please use **one** of the two installation options, either native **or** docker 
   * Use this option to install the SDK on a workstation that already has ROS installed: [One Line SDK Install (binary)](https://bitbucket.org/DataspeedInc/dbw_mkz_ros/src/81e63fcc335d7b64139d7482017d6a97b405e250/ROS_SETUP.md?fileviewer=file-view-default)
 * Download the [Udacity Simulator](https://github.com/udacity/CarND-Capstone/releases).
 
+* Either clone this repository to /capstone, or clone it elsewhere and symlink it there with `ln -s "$CLONEDIR" /capstone`.
+
+* Make a python 2.7 virtual environment. [*virtualenvwrapper*](https://virtualenvwrapper.readthedocs.io/en/latest/) is great for this.
+
+* If installing on a machine with a CUDA- and TensorFlow-capable GPU:
+  * Follow [TensorFlow's](https://www.tensorflow.org/install/install_linux#tensorflow_gpu_support) installation instructions, including the link to instructions for installing the CUDA toolkit and cuDNN. You may want to insert any commands for modifying your environment variables, such as `LD_LIBRARY_PATH`, into your ~/.profile file.
+  * Change `tensorflow` to `tensorflow-gpu` in requirements.txt.
+  * Note that CUDA 8 may be necessary for running with Python 2.7, as is the norm for ROS. This can be installed alongside CUDA 9 with `sudo apt-get install cuda-8-0`.
+
+* Reproduce the installation steps from Dockerfile, including running tod_coco_install.sh. Note that you'll first need to run e.g. `export ROS_DISTRO=kinetic` depending on your ROS distribution. Note that tod_coco_install.sh modifies your .bashrc file.
+
+* Still in the virtualenv, run `pip uninstall em` and `pip install` [`catkin_pkg`](https://stackoverflow.com/questions/43024337/why-this-error-when-i-try-to-create-workspaces-in-ros) [`em`](https://answers.ros.org/question/257331/python-module-empy-missing-tutorials/) [`rospkg`](https://answers.ros.org/question/39657/importerror-no-module-named-rospkg/).
+
+* In /capstone/ros, run `catkin_make`.
+
+* Either in a terminal where `roslaunch` is to be run, or permanently via ~/.bashrc or ~/.profile, run `source /capstone/ros/devel/setup.sh`.
+
+* Download [luu_real.pb](https://www.dropbox.com/s/51db8bato54plx1/luu_real.pb?dl=1) and [luu_sim.pb](https://www.dropbox.com/s/jbzy1skrsso15bf/luu_sim.pb?dl=1) and put them both in /capstone/ros/src/tl_detector/light_classification/saved_nets, making this directory if necessary.
+
+* Optionally, install the the Rviz plugins with `sudo apt-get install ros-kinetic-jsk-rviz-plugins libbullet-dev libsdl-image1.2-dev libsdl-dev`.
+
+
+
 ### Docker Installation
 [Install Docker](https://docs.docker.com/engine/installation/)
 
@@ -37,24 +60,11 @@ To set up port forwarding, please refer to the [instructions from term 2](https:
 
 ### Usage
 
-1. Clone the project repository
-```bash
-git clone https://github.com/udacity/CarND-Capstone.git
-```
+In /capstone/ros, after establishing the right `$PYTHONPATH` environment variable to (likely via ~/.profile) and sourcing /capstone/ros/devel/setup.sh, run the controller and light-detector with `roslaunch launch/styx.launch`.
 
-2. Install python dependencies
-```bash
-cd CarND-Capstone
-pip install -r requirements.txt
-```
-3. Make and run styx
-```bash
-cd ros
-catkin_make
-source devel/setup.sh
-roslaunch launch/styx.launch
-```
-4. Run the simulator
+When the lauch has completed and all nodes are running, use run the simulator, and uncheck "Manual", and check "Camera".
+
+
 
 ### Real world testing
 1. Download [training bag](https://s3-us-west-1.amazonaws.com/udacity-selfdrivingcar/traffic_light_bag_file.zip) that was recorded on the Udacity self-driving car.
