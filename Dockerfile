@@ -24,11 +24,6 @@ COPY requirements.txt ./requirements.txt
 RUN pip install -r requirements.txt
 
 
-# Install Tensorflow Object Detection API
-COPY tod_coco_install.sh ./tod_coco_install.sh
-RUN bash tod_coco_install.sh
-
-
 # install required ros dependencies
 RUN apt-get install -y ros-$ROS_DISTRO-cv-bridge ros-$ROS_DISTRO-pcl-ros ros-$ROS_DISTRO-image-proc
 

@@ -7,8 +7,6 @@ import numpy as np
 import tensorflow as tf
 from distutils.version import LooseVersion
 
-from object_detection.utils import label_map_util
-from object_detection.utils import visualization_utils as vis_util
 
 class TLClassifier(object):
 
@@ -35,14 +33,12 @@ class TLClassifier(object):
         self.DOWNLOAD_BASE = 'http://download.tensorflow.org/models/object_detection/'
 
         # Load the Labels
-        PATH_TO_LABELS = self.PATH_TO_MODEL+'color_label.pbtx'
-        NUM_CLASSES    = 4
+        self.category_index = {
+            1: {'id': 1, 'name': u'GREEN'},
+            2: {'id': 2, 'name': u'RED'},
+            3: {'id': 3, 'name': u'YELLOW'}
+        }
 
-        label_map           = label_map_util.load_labelmap(PATH_TO_LABELS)
-        categories          = label_map_util.convert_label_map_to_categories(label_map,
-                                                                             max_num_classes  = NUM_CLASSES,
-                                                                             use_display_name = True)
-        self.category_index = label_map_util.create_category_index(categories)
 
         ##### Build network
 
@@ -117,7 +113,6 @@ class TLClassifier(object):
 
     def get_boxes(self, image):
 
-
         # add dimension to feed classifier
         feeded_image = np.expand_dims(image, axis=0)
 
@@ -162,7 +157,8 @@ class TLClassifier(object):
         if scores[best_index] > 0.6:
             predicted_traffic_light = self.category_index[classes[best_index]]['name']
 
-        print predicted_traffic_light
+        if predicted_traffic_light != 'UNKNOWN':
+            print predicted_traffic_light
 
         if predicted_traffic_light == "GREEN":
             self.traffic_light = TrafficLight.GREEN
@@ -172,10 +168,5 @@ class TLClassifier(object):
 
         elif predicted_traffic_light == "RED":
             self.traffic_light = TrafficLight.RED
-
-        # Visualization of the results of a detection.
-        vis_util.visualize_boxes_and_labels_on_image_array(image, boxes,
-        classes, scores, self.category_index, use_normalized_coordinates=True,
-        line_thickness=8)
 
         return self.traffic_light
