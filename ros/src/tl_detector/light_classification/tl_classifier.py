@@ -33,11 +33,18 @@ class TLClassifier(object):
         self.DOWNLOAD_BASE = 'http://download.tensorflow.org/models/object_detection/'
 
         # Load the Labels
-        self.category_index = {
+        categories = {
             1: {'id': 1, 'name': u'GREEN'},
             2: {'id': 2, 'name': u'RED'},
-            3: {'id': 3, 'name': u'YELLOW'}
+            3: {'id': 3, 'name': u'YELLOW'},
+            4: {'id': 4, 'name': u'UNKNOWN'},
         }
+        class CategoryIndex(object):
+    
+            def __getitem__(self, key):
+                
+                return categories.get(key, categories[4])
+        self.category_index = CategoryIndex()
 
 
         ##### Build network
@@ -50,10 +57,12 @@ class TLClassifier(object):
         # http://insightsbot.com/blog/womeQ/tensorflow-object-detection-tutorial-on-images
         self.detection_graph = tf.Graph()
 
-        if self.mode == "sim":
-            PATH_TO_CKPT = self.PATH_TO_MODEL + 'saved_nets/luu_sim.pb'
-        else:
-            PATH_TO_CKPT = self.PATH_TO_MODEL + 'saved_nets/luu_real.pb'
+        PATH_TO_CKPT = self.PATH_TO_MODEL + 'saved_nets/default.pb'
+
+        # if self.mode == "sim":
+        #     PATH_TO_CKPT = self.PATH_TO_MODEL + 'saved_nets/luu_sim.pb'
+        # else:
+        #     PATH_TO_CKPT = self.PATH_TO_MODEL + 'saved_nets/luu_real.pb'
 
         with self.detection_graph.as_default():
             od_graph_def = tf.GraphDef()
