@@ -6,6 +6,9 @@
  - CUDA 8.0 and CuDNN 7.0 installed
   - ***TODO: Add Instruction***
  - Tensorflow 1.4.0 or Tensorflow-gpu 1.4.0
+
+Note that a script that installs most of the below dependencies should be available alongside this README.
+
  ```
  pip install tensorflow==1.4.0
  ```
@@ -42,16 +45,16 @@
  └─data
  └─models
  ```
- - copy `train.py` and `export_inference_graph from.py` from  `<ts_models_root>/models/research/object_detection` into `<project_folder>`
- - copy `ssd_inception_v2_coco.config` from `<ts_models_root>/models/research/object_detection/samples/configs` into `<project_folder>/config`
- - modify `ssd_inception_v2_coco.config`
+
+ - Copy `train.py` and `export_inference_graph from.py` from  `<ts_models_root>/models/research/object_detection` into `<project_folder>`
+ - Copy `ssd_inception_v2_coco.config` from `<ts_models_root>/models/research/object_detection/samples/configs` into `<project_folder>/config`
+ - Modify `ssd_inception_v2_coco.config`
   - ***TODO: .config file modifications***
- - download and extract COCO model into `<project_folder>/models`
- ```
- http://download.tensorflow.org/models/object_detection/ssd_inception_v2_coco_11_06_2017.tar.gz
- ```
- - put dataset folder, \*.records, label_map.pbtxt into `<project_folder>/data`
-  - ***TODO: create data set***
+ - Download and extract COCO model into `<project_folder>/models`,
+   from either [tensorflow.org](http://download.tensorflow.org/models/object_detection/ssd_inception_v2_coco_11_06_2017.tar.gz)
+   or [dropbox](https://www.dropbox.com/s/jjg77tliec4kew6/ssd_inception_v2_coco_2017_11_17.zip?dl=1).
+ - Put dataset folder, \*.records, label_map.pbtxt into `<project_folder>/data`. Specifically,
+  data is available to download in two archives; [a real-world dataset](https://www.dropbox.com/s/8o6mhzwuvj5f9ob/real_training_data.zip?dl=1), and a [simulator-sourced one](https://www.dropbox.com/s/8nhslaf6v5ihkyn/sim_training_data.zip?dl=1). In addition to appropriately-named subdirectories under `<project_folder>/data/data` for these two datasets, the record files and label file from [this archive](https://www.dropbox.com/s/jrxtkxqx5guhw7e/data_records_labels.zip?dl=1) should be put in `<project_folder>/data/`.
 
 #### Train Model
 
