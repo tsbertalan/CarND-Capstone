@@ -12,7 +12,8 @@ import cv2
 import yaml
 from scipy.spatial import KDTree
 
-STATE_COUNT_THRESHOLD = 3
+STATE_COUNT_THRESHOLD_GREEN = 3
+STATE_COUNT_THRESHOLD_RED = 1
 
 class TLDetector(object):
     def __init__(self):
@@ -97,7 +98,12 @@ class TLDetector(object):
         if self.state != state:
             self.state_count = 0
             self.state = state
-        elif self.state_count >= STATE_COUNT_THRESHOLD:
+
+        elif (
+            self.state_count >= STATE_COUNT_THRESHOLD_RED and state == TrafficLight.RED
+            ) or (
+            self.state_count >= STATE_COUNT_THRESHOLD_GREEN and state != TrafficLight.RED
+            ):
             self.last_state = self.state
             if state == TrafficLight.RED:
                 pass
