@@ -14,23 +14,15 @@ class TLClassifier(object):
 
         self.traffic_light        = TrafficLight.UNKNOWN
         self.condition_check      = False
-        self.maybe_download_model = False
         self.mode                 = "sim"
 
         """
         Pretrained model by TensorFlow
         """
         #base path where we will save our models
-        #self.PATH_TO_MODEL = '/home/udacity/Final_project/Traffic_light/traffic_light_model/'
-
         import inspect
         from os import path
         self.PATH_TO_MODEL = path.dirname(inspect.stack()[0][1]) + '/'
-
-        # Specify Model To Download. Obtain the model name from the object detection model zoo.
-        self.MODEL_NAME    = 'ssd_inception_v2_coco_2017_11_17'
-        self.MODEL_FILE    = self.MODEL_NAME + '.tar.gz'
-        self.DOWNLOAD_BASE = 'http://download.tensorflow.org/models/object_detection/'
 
         # Load the Labels
         categories = {
@@ -94,32 +86,6 @@ class TLClassifier(object):
 
         self.condition_check  = True
 
-    def maybe_download_pretrained_vgg(self):
-
-        """
-        Download and extract pretrained model if it doesn't exist
-        """
-        DESTINATION_MODEL_TAR_PATH = self.PATH_TO_MODEL + self.MODEL_FILE
-
-        # Check if model downloaded
-        if not os.path.exists (self.PATH_TO_MODEL + self.MODEL_NAME + '/frozen_inference_graph.pb'):
-
-            # Download model
-            print 'Downloading pre-trained model...'
-            opener = urllib.request.URLopener()
-            opener.retrieve(self.DOWNLOAD_BASE + self.MODEL_FILE, DESTINATION_MODEL_TAR_PATH)
-
-            # Extracting model
-            print 'Extracting model...'
-            tar_file = tarfile.open(DESTINATION_MODEL_TAR_PATH)
-
-            for file in tar_file.getmembers():
-                file_name = os.path.basename(file.name)
-                if 'frozen_inference_graph.pb' in file_name:
-                    tar_file.extract(file, self.PATH_TO_MODEL)
-
-        self.maybe_download_model = True
-
     def get_boxes(self, image):
 
         # add dimension to feed classifier
@@ -153,8 +119,6 @@ class TLClassifier(object):
         #TODO implement light color prediction
 
         if not self.condition_check: self.check_condition()
-
-        if not self.maybe_download_model: self.maybe_download_pretrained_vgg()
 
         boxes, scores, classes, num = self.get_boxes(image)
 
